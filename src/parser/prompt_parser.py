@@ -30,6 +30,8 @@ class PromptParser:
 
         lines = prompt.split("\n")
 
+        rule_id= 0
+
         for line in lines:
 
             line = line.strip()
@@ -41,9 +43,11 @@ class PromptParser:
 
             rules.append(
                 PromptRule(
+                    id= rule_id,
                     text=line,
                     rule_type=rule_type
                 )
             )
+            rule_id+=1
 
         return rules
