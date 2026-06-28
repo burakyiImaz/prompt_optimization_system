@@ -3,50 +3,50 @@ import networkx as nx
 
 class GraphAnalyzer:
 
-    def analyze(self, graph: nx.DiGraph):
+    def analyze(self, graph):
 
         analysis = {}
 
+
         conflict_nodes = set()
 
-        for u, v, data in graph.edges(data=True):
-            if data.get("type") == "conflict":
+        for u, v, d in graph.edges(data=True):
+            if d.get("type") == "conflict":
                 conflict_nodes.add(u)
                 conflict_nodes.add(v)
 
         analysis["conflict_nodes"] = conflict_nodes
 
-        centrality = nx.degree_centrality(graph)
-        analysis["centrality"] = centrality
 
-        analysis["sorted_importance"] = sorted(
-            centrality.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
+        analysis["centrality"] = nx.degree_centrality(graph)
 
-        redundancy_pairs = []
+        analysis["pagerank"] = nx.pagerank(graph)
 
-        for u, v, data in graph.edges(data=True):
-            if data.get("type") == "redundant":
-                redundancy_pairs.append((u, v))
 
-        analysis["redundancy_pairs"] = redundancy_pairs
-
-        risk_scores = {}
+        risk = {}
 
         for node in graph.nodes():
-            risk = 0
+            score = 0
 
-            for u, v, data in graph.edges(data=True):
-                if v == node and data.get("type") == "conflict":
-                    risk += 2
+            for u, v, d in graph.edges(data=True):
 
-                if v == node and data.get("type") == "redundant":
-                    risk += 1
+                if v == node and d.get("type") == "conflict":
+                    score += 2
 
-            risk_scores[node] = risk
+                if v == node and d.get("type") == "redundant":
+                    score += 1
 
-        analysis["risk_scores"] = risk_scores
+            risk[node] = score
+
+        analysis["risk_scores"] = risk
+
+
+        conflict_graph = nx.Graph()
+
+        for u, v, d in graph.edges(data=True):
+            if d.get("type") == "conflict":
+                conflict_graph.add_edge(u, v)
+
+        analysis["clusters"] = list(nx.connected_components(conflict_graph))
 
         return analysis
