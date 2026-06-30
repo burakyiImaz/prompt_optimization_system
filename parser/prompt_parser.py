@@ -1,53 +1,50 @@
-from prompt_schema import PromptRule
+from .prompt_schema import PromptRule
 
 
 class PromptParser:
 
-    def __init__(self):
-        pass
+    def classify_rule(self, line: str):
 
-    def classify_rule(self, line: str) -> str:
+        l = line.lower()
 
-        line_lower = line.lower()
-
-        if "you are" in line_lower:
+        if "you are" in l or "act as" in l:
             return "role"
 
-        if line_lower.startswith("always"):
+        if l.startswith("always"):
             return "instruction"
 
-        if line_lower.startswith("never"):
+        if l.startswith("never") or "do not" in l:
             return "constraint"
 
-        if line_lower.startswith("if"):
+        if l.startswith("if") or l.startswith("when"):
             return "condition"
+
+        if "example" in l:
+            return "example"
 
         return "general"
 
     def parse(self, prompt: str):
 
         rules = []
-
         lines = prompt.split("\n")
 
-        rule_id= 0
+        rule_id = 0
 
         for line in lines:
 
             line = line.strip()
-
             if not line:
                 continue
 
-            rule_type = self.classify_rule(line)
-
             rules.append(
                 PromptRule(
-                    id= rule_id,
+                    id=rule_id,
                     text=line,
-                    rule_type=rule_type
+                    rule_type=self.classify_rule(line)
                 )
             )
-            rule_id+=1
+
+            rule_id += 1
 
         return rules
